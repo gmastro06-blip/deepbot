@@ -1,0 +1,63 @@
+{
+  "config_path": "configs/default_settings.json",
+  "log_level": "INFO",
+  "log_file": "logs/tibia_bot.log",
+  "log_to_console": true,
+  "monitor_index": 1,
+  "capture_fps": 5,
+  "capture_quality": 80,
+  "detection_confidence": 0.7,
+  "detection_interval": 0.5,
+  "colors": {
+    "hp": {
+      "full": [
+        50,
+        50,
+        200
+      ],
+      "medium": [
+        40,
+        40,
+        150
+      ],
+      "low": [
+        30,
+        30,
+        100
+      ],
+      "critical": [
+        20,
+        20,
+        80
+      ]
+    },
+    "mp": {
+      "full": [
+        200,
+        50,
+        50
+      ],
+      "medium": [
+        150,
+        40,
+        40
+      ],
+      "low": [
+        100,
+        30,
+        30
+      ],
+      "critical": [
+        80,
+        20,
+        20
+      ]
+    }
+  },
+  "emergency_hp_threshold": 30,
+  "emergency_mp_threshold": 20,
+  "auto_heal_enabled": true,
+  "auto_mana_enabled": true,
+  "color_tolerance": 30,
+  "min_region_area": 100
+}

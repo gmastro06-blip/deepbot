@@ -1,0 +1,79 @@
+{
+  "screen": {
+    "width": 1920,
+    "height": 1080,
+    "timestamp": "2026-01-02T11:52:30.206635"
+  },
+  "elements": [
+    {
+      "name": "hp_bar",
+      "x": 760,
+      "y": 50,
+      "width": 400,
+      "height": 20,
+      "confidence": 0.8,
+      "detection_method": "auto_detect",
+      "last_detected": "2026-01-02T11:52:30.206635"
+    },
+    {
+      "name": "mp_bar",
+      "x": 760,
+      "y": 75,
+      "width": 400,
+      "height": 20,
+      "confidence": 0.8,
+      "detection_method": "auto_detect",
+      "last_detected": "2026-01-02T11:52:30.206635"
+    },
+    {
+      "name": "inventory",
+      "x": 1620,
+      "y": 680,
+      "width": 280,
+      "height": 380,
+      "confidence": 0.8,
+      "detection_method": "auto_detect",
+      "last_detected": "2026-01-02T11:52:30.206635"
+    },
+    {
+      "name": "minimap",
+      "x": 1720,
+      "y": 50,
+      "width": 150,
+      "height": 150,
+      "confidence": 0.8,
+      "detection_method": "auto_detect",
+      "last_detected": "2026-01-02T11:52:30.206635"
+    },
+    {
+      "name": "equipment",
+      "x": 1420,
+      "y": 680,
+      "width": 180,
+      "height": 380,
+      "confidence": 0.8,
+      "detection_method": "auto_detect",
+      "last_detected": "2026-01-02T11:52:30.206635"
+    },
+    {
+      "name": "skills",
+      "x": 1470,
+      "y": 200,
+      "width": 200,
+      "height": 300,
+      "confidence": 0.8,
+      "detection_method": "auto_detect",
+      "last_detected": "2026-01-01T23:42:19.441717"
+    },
+    {
+      "name": "chat",
+      "x": 50,
+      "y": 780,
+      "width": 1820,
+      "height": 250,
+      "confidence": 0.8,
+      "detection_method": "auto_detect",
+      "last_detected": "2026-01-02T11:52:30.206635"
+    }
+  ]
+}
