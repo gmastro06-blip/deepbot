@@ -1,0 +1,318 @@
+# fix_skills_window.py
+import os
+import sys
+
+def add_skills_window_to_ui_detector():
+    """Agrega el método detect_skills_window a UIDetector"""
+    
+    file_path = "core/ui_detector.py"
+    
+    if not os.path.exists(file_path):
+        print(f"❌ {file_path} no encontrado")
+        return
+    
+    with open(file_path, 'r', encoding='utf-8') as f:
+        content = f.read()
+    
+    # Buscar la línea donde está definido detect_equipment_window
+    if 'def detect_equipment_window' in content:
+        # Encontrar el final de esa función (buscando la próxima función que empiece con 'def ')
+        lines = content.split('\n')
+        new_lines = []
+        i = 0
+        while i < len(lines):
+            line = lines[i]
+            new_lines.append(line)
+            # Si encontramos detect_equipment_window, después de añadirla, insertamos detect_skills_window
+            if 'def detect_equipment_window' in line:
+                # Avanzar hasta el final de la función (asumiendo que está correctamente indentada)
+                # Buscamos una línea que no tenga indentación (o que tenga menos indentación) y no sea blanco
+                j = i + 1
+                while j < len(lines) and (lines[j].startswith(' ') or lines[j].startswith('\t') or lines[j].strip() == ''):
+                    new_lines.append(lines[j])
+                    j += 1
+                # Ahora j está en el inicio de la siguiente función o al final del archivo
+                # Insertamos nuestra nueva función aquí
+                skills_method = '''
+    def detect_skills_window(self, screenshot: np.ndarray) -> Optional[Tuple[int, int, int, int]]:
+        """
+        Detecta la ventana de habilidades.
+        
+        Args:
+            screenshot: Captura de pantalla completa
+        
+        Returns:
+            Coordenadas (x, y, ancho, alto) o None
+        """
+        try:
+            # Si ya tenemos posición guardada, usarla
+            if self.ui_config:
+                skills_pos = self.ui_config.get_position('skills')
+                if skills_pos:
+                    return (skills_pos['x'], skills_pos['y'], 
+                           skills_pos['width'], skills_pos['height'])
+            
+            # Por ahora, retornar None ya que no está implementado
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.warning("⚠️ Detección de ventana de habilidades no implementada")
+            return None
+            
+        except Exception as e:
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.error(f"Error detectando ventana de habilidades: {e}")
+            return None'''
+                new_lines.append(skills_method)
+                # Continuar con el resto de las líneas
+                i = j - 1  # Ajustar el índice para no procesar de nuevo las líneas ya añadidas
+            i += 1
+        
+        # Guardar el archivo modificado
+        with open(file_path, 'w', encoding='utf-8') as f:
+            f.write('\n'.join(new_lines))
+        
+        print(f"✅ Método detect_skills_window agregado a {file_path}")
+    else:
+        print(f"⚠️  No se encontró detect_equipment_window en {file_path}")
+
+def fix_template_matcher_registration():
+    """Arregla TemplateMatcher para que cargue plantillas automáticamente"""
+    
+    file_path = "processors/template_matcher.py"
+    
+    if not os.path.exists(file_path):
+        print(f"❌ {file_path} no encontrado")
+        return
+    
+    with open(file_path, 'r', encoding='utf-8') as f:
+        content = f.read()
+    
+    # Verificar si ya tiene un método para cargar plantillas automáticamente
+    if 'def match_template' in content:
+        # Buscar el método match_template y modificar para que cargue la plantilla si no está registrada
+        lines = content.split('\n')
+        new_lines = []
+        for line in lines:
+            new_lines.append(line)
+            # Si encontramos el método match_template, podemos modificarlo o añadir un método nuevo
+            # Por simplicidad, vamos a añadir un método load_template_if_needed
+            if 'def match_template' in line and '):' in line:
+                # Insertar después de la definición de match_template
+                pass  # No vamos a modificar dentro de la función, sino que añadiremos un método nuevo
+        
+        # Añadir un método que cargue plantillas automáticamente
+        # Buscar el final de la clase para insertar antes
+        class_end = None
+        for i, line in enumerate(new_lines):
+            if line.strip() == '' and i > 0 and new_lines[i-1].strip() == '':
+                # Posible fin de la clase, pero no es seguro. Buscamos un patrón mejor.
+                pass
+        
+        # En su lugar, vamos a modificar el método match_template para que cargue la plantilla si no está en cache
+        # Esto es más directo. Reemplazaremos todo el archivo con una versión corregida.
+        corrected_code = '''"""
+Clase TemplateMatcher - Coincidencia de plantillas
+"""
+import cv2
+import numpy as np
+from typing import Optional, Tuple, Dict, Any
+import os
+
+class TemplateMatcher:
+    """Maneja la coincidencia de plantillas"""
+    
+    def __init__(self):
+        self.templates = {}
+        self.template_cache = {}  # Nuevo caché para templates cargados
+    
+    def load_template(self, name: str, filepath: str) -> bool:
+        """Carga una plantilla desde archivo"""
+        try:
+            if not os.path.exists(filepath):
+                print(f"Archivo de plantilla no encontrado: {filepath}")
+                return False
+                
+            template = cv2.imread(filepath, cv2.IMREAD_UNCHANGED)
+            if template is None:
+                print(f"No se pudo cargar la plantilla: {filepath}")
+                return False
+                
+            self.templates[name] = template
+            print(f"✅ Plantilla '{name}' cargada desde {filepath}")
+            return True
+            
+        except Exception as e:
+            print(f"Error cargando plantilla '{name}': {e}")
+            return False
+    
+    def match_template(self, image: np.ndarray, template_path: str, 
+                      threshold: float = 0.8) -> Dict[str, Any]:
+        """
+        Busca una plantilla en la imagen
+        
+        Args:
+            image: Imagen donde buscar
+            template_path: Ruta al archivo de plantilla
+            threshold: Umbral de confianza (0-1)
+        
+        Returns:
+            Dict con 'found', 'position', 'confidence', 'region'
+        """
+        try:
+            # Cargar plantilla si no está en caché
+            if template_path not in self.template_cache:
+                if not os.path.exists(template_path):
+                    print(f"Plantilla no encontrada: {template_path}")
+                    return {'found': False, 'position': None, 'confidence': 0.0, 'region': None}
+                
+                template = cv2.imread(template_path, cv2.IMREAD_UNCHANGED)
+                if template is None:
+                    print(f"No se pudo cargar plantilla: {template_path}")
+                    return {'found': False, 'position': None, 'confidence': 0.0, 'region': None}
+                
+                self.template_cache[template_path] = template
+            
+            template = self.template_cache[template_path]
+            
+            # Verificar que las imágenes tengan dimensiones válidas
+            if image is None or image.size == 0:
+                print("Imagen vacía para template matching")
+                return {'found': False, 'position': None, 'confidence': 0.0, 'region': None}
+            
+            if template is None or template.size == 0:
+                print("Template vacío para template matching")
+                return {'found': False, 'position': None, 'confidence': 0.0, 'region': None}
+            
+            # Verificar que la imagen sea más grande que la plantilla
+            if image.shape[0] < template.shape[0] or image.shape[1] < template.shape[1]:
+                print(f"Imagen más pequeña que plantilla: {image.shape} < {template.shape}")
+                return {'found': False, 'position': None, 'confidence': 0.0, 'region': None}
+            
+            # Convertir a escala de grises si es necesario
+            if len(image.shape) == 3:
+                img_gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+            else:
+                img_gray = image
+            
+            if len(template.shape) == 3:
+                tmpl_gray = cv2.cvtColor(template, cv2.COLOR_BGR2GRAY)
+            else:
+                tmpl_gray = template
+            
+            # Realizar template matching
+            result = cv2.matchTemplate(img_gray, tmpl_gray, cv2.TM_CCOEFF_NORMED)
+            min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(result)
+            
+            if max_val >= threshold:
+                x, y = max_loc
+                h, w = template.shape[:2]
+                
+                return {
+                    'found': True,
+                    'position': (x, y),
+                    'confidence': float(max_val),
+                    'region': (x, y, w, h)
+                }
+            else:
+                return {
+                    'found': False,
+                    'position': None,
+                    'confidence': float(max_val),
+                    'region': None
+                }
+                
+        except Exception as e:
+            print(f"Error en match_template: {e}")
+            return {'found': False, 'position': None, 'confidence': 0.0, 'region': None}
+    
+    def match(self, image: np.ndarray, template_name: str, 
+              threshold: float = 0.8) -> Optional[Tuple[int, int, int, int]]:
+        """
+        Versión simplificada para compatibilidad
+        
+        Args:
+            image: Imagen donde buscar
+            template_name: Nombre de la plantilla registrada
+            threshold: Umbral de confianza
+        
+        Returns:
+            Región (x, y, w, h) o None
+        """
+        if template_name not in self.templates:
+            print(f"Plantilla '{template_name}' no registrada")
+            return None
+        
+        template = self.templates[template_name]
+        
+        try:
+            # Realizar template matching
+            result = cv2.matchTemplate(image, template, cv2.TM_CCOEFF_NORMED)
+            min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(result)
+            
+            if max_val >= threshold:
+                h, w = template.shape[:2]
+                x, y = max_loc
+                return (x, y, w, h)
+            
+            return None
+            
+        except Exception as e:
+            print(f"Error en match: {e}")
+            return None
+'''
+        # Guardar el archivo corregido
+        with open(file_path, 'w', encoding='utf-8') as f:
+            f.write(corrected_code)
+        
+        print(f"✅ {file_path} actualizado para cargar plantillas automáticamente")
+    else:
+        print(f"⚠️  No se encontró match_template en {file_path}")
+
+def update_tibia_bot_for_missing_methods():
+    """Actualiza tibia_bot.py para manejar métodos de detección faltantes"""
+    
+    file_path = "core/tibia_bot.py"
+    
+    if not os.path.exists(file_path):
+        print(f"❌ {file_path} no encontrado")
+        return
+    
+    with open(file_path, 'r', encoding='utf-8') as f:
+        content = f.read()
+    
+    # Buscar la función auto_detect_ui y modificar el diccionario para usar getattr
+    if 'def auto_detect_ui' in content:
+        lines = content.split('\n')
+        new_lines = []
+        for line in lines:
+            # Buscar el diccionario de detecciones
+            if "'equipment': self.detector.detect_equipment_window(screenshot)," in line:
+                # Reemplazar con una versión que use getattr para manejar métodos faltantes
+                new_line = "            'equipment': self.detector.detect_equipment_window(screenshot) if hasattr(self.detector, 'detect_equipment_window') else None,"
+                new_lines.append(new_line)
+            elif "'skills': self.detector.detect_skills_window(screenshot)," in line:
+                new_line = "            'skills': self.detector.detect_skills_window(screenshot) if hasattr(self.detector, 'detect_skills_window') else None,"
+                new_lines.append(new_line)
+            else:
+                new_lines.append(line)
+        
+        # Guardar el archivo modificado
+        with open(file_path, 'w', encoding='utf-8') as f:
+            f.write('\n'.join(new_lines))
+        
+        print(f"✅ {file_path} actualizado para manejar métodos faltantes")
+    else:
+        print(f"⚠️  No se encontró auto_detect_ui en {file_path}")
+
+def main():
+    print("🔧 Arreglando errores de skills window y plantillas...")
+    
+    add_skills_window_to_ui_detector()
+    fix_template_matcher_registration()
+    update_tibia_bot_for_missing_methods()
+    
+    print("\n✅ Errores arreglados. Ejecuta: python test_run_fixed.py")
+
+if __name__ == "__main__":
+    main()
